@@ -1,9 +1,9 @@
 "use client"
-import Image from "next/image";
-import Logo from '../../public/OTW.png'
-import { useState } from "react";
-import styled from "styled-components";
 
+import Image from "next/image";
+import { useState } from "react";
+
+import Logo from '../../public/OTW.png'
 
 export default function Home() {
   const [selectedVenue, setSelectedVenue] = useState('buffaloWildWings');
@@ -15,7 +15,6 @@ export default function Home() {
           <Image
             src={Logo}
             width={100}
-            height={100}
             alt="OTW"
           />
         </div>
@@ -27,20 +26,29 @@ export default function Home() {
       </div>
 
       <div className="bg-white flex flex-col w-[95%] min-h-[100vh] rounded-tl-2xl rounded-tr-2xl p-8 mt-[-2em]">
-        <label className="flex flex-col items-center justify-around text-black text-2xl">
-          Where you checking in from?
-        </label>
-        <select
-          className="text-black border-[1px] border-black border-solid mt-4"
-          name="venueSelect"
-          value={selectedVenue}
-          onChange={e => setSelectedVenue(e.target.value)}
-        >
-          <option value="buffaloWildWings">Buffalo Wild Wings -- Melbourne</option>
-          <option value="AppleBees">Apple Bees - Palm Bay Road</option>
-          <option value="Mainstree">Mainstreet Pub</option>
-          <option value="Debauchery">Debauchery</option>
-        </select>
+        <div className="flex flex-col items-center">
+          <label className="flex flex-col items-center justify-around text-black text-2xl">
+            Where you checking in from?
+          </label>
+          <select
+            className="text-black border-[1px] border-black border-solid mt-4 p-2 w-[90%]"
+            name="venueSelect"
+            value={selectedVenue}
+            onChange={e => setSelectedVenue(e.target.value)}
+          >
+            <option value="buffaloWildWings">Buffalo Wild Wings -- Melbourne</option>
+            <option value="AppleBees">Apple Bees - Palm Bay Road</option>
+            <option value="Mainstree">Mainstreet Pub</option>
+            <option value="Debauchery">Debauchery</option>
+          </select>
+
+          <button
+            className="border-[1px] gradient-red text-black mt-4 p-2 rounded w-[50%]"
+            onClick={() => console.log('im being clicked')}
+          >
+            Check In ✔
+          </button>
+        </div>
       </div>
     </main>
   );

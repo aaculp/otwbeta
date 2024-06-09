@@ -1,37 +1,46 @@
-import React from "react";
-
+import React, { useRef, useEffect } from "react";
 import Tick from "@pqina/flip";
 import "@pqina/flip/dist/flip.min.css";
+import './index.css';
 
-export default class Flip extends React.Component {
-    constructor(props) {
-        super(props);
-        this._tickRef = React.createRef();
-    }
+export const Flipr = ({ value }) => {
+    const divRef = useRef();
 
-    componentDidMount() {
-        this._tickInstance = Tick.DOM.create(this._tickRef.current, {
-            value: this.props.value
+    const tickRef = useRef();
+
+    useEffect(() => {
+        const currDiv = divRef.current;
+        const didInit = tick => {
+            tickRef.current = tick;
+        };
+        Tick.DOM.create(currDiv, {
+            value,
+            didInit,
+            repeat: true,
+            view: {
+                children: [
+                    {
+                        root: "div",
+                        style: ".tick",
+                        repeat: true,
+                        children: [
+                            {
+                                view: "flip"
+                            }
+                        ]
+                    }
+                ]
+            }
         });
-    }
+        const tickValue = tickRef.current;
+        return () => Tick.DOM.destroy(tickValue);
+    });
 
-    componentDidUpdate() {
-        if (!this._tickInstance) return;
-        this._tickInstance.value = this.props.value;
-    }
+    useEffect(() => {
+        if (tickRef.current) {
+            tickRef.current.value = value;
+        }
+    }, [value]);
 
-    componentWillUnmount() {
-        if (!this._tickInstance) return;
-        Tick.DOM.destroy(this._tickRef.current);
-    }
-
-    render() {
-        return (
-            <div ref={this._tickRef} className="tick">
-                <div data-repeat="true" aria-hidden="true">
-                    <span data-view="flip">Tick</span>
-                </div>
-            </div>
-        );
-    }
-}
+    return <div ref={divRef} />;
+};

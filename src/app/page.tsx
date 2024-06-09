@@ -1,32 +1,53 @@
 "use client"
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 
 import { Flipr } from '../components/Flip'
-import SelectVenue from '../components/SelectVenue'
+import { useVenues } from '../hooks/useVenues';
 import Logo from '../../public/OTW.png'
 
 const StyledButton = styled.button`
-  &:active {
+  &:active, &:hover {
     cursor: pointer;
     opacity: 0.7;
   }
 
-  // &:active {
-  //   background-color: rgba(12,138,26,0.9);
-  //   border: 1px solid black;
-  //   opacity: 1;
-  //   transition: background-color 500ms linear;
-  //   -webkit-transition: background-color 500ms linear;
-  //   -ms-transition: background-color 500ms linear;
-  // }
+  &:active {
+    background-color: rgba(12,138,26,0.9);
+    border: 1px solid black;
+    opacity: 1;
+    transition: background-color 250ms linear;
+    -webkit-transition: background-color 250ms linear;
+    -ms-transition: background-color 250ms linear;
+  }
 `;
 
-export default function Home() {
-  const [flipValue, setFlipValue] = useState(0)
+interface Venue {
+  id: string;
+  name: string;
+  location: string;
+}
 
+export default function Home() {
+  const { getAllVenues } = useVenues()
+  const [flipValue, setFlipValue] = useState(0)
+  const [selectedVenue, setSelectedVenue] = useState('');
+  const [selectableVenues, setSelectableVenues] = useState<Venue[]>([])
+
+  const handleGetVenues = useCallback(async () => {
+    const data = await getAllVenues();
+    setSelectableVenues([...data?.venues])
+  }, [getAllVenues])
+
+  useEffect(() => {
+    if (selectableVenues.length === 0) {
+      handleGetVenues()
+    }
+  }, [selectableVenues, handleGetVenues])
+
+  // Simulating getting all time checkins
   useEffect(() => {
     let timer = setTimeout(() => {
       setFlipValue(34)
@@ -52,16 +73,33 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="bg-white flex flex-col w-[95%] min-h-[100vh] rounded-tl-2xl rounded-tr-2xl p-8 mt-[-2em]">
+      <div className="bg-white flex flex-col w-[95%] min-h-[100vh] rounded-tl-2xl rounded-tr-2xl p-8 mt-[-2em] text-black">
         <h1>
+          <span className="text-3xl pb-4">All Time Checkins:</span>
           <Flipr value={flipValue} />
         </h1>
         <div className="flex flex-col items-center">
-          <SelectVenue />
+          <div>
+            <label className="flex flex-col items-center justify-around text-black text-2xl">
+              Where you checking in from?
+            </label>
+            <select
+              className="text-black border-[1px] border-black border-solid mt-4 p-2 w-full"
+              name="venueSelect"
+              value={selectedVenue}
+              onChange={e => setSelectedVenue(e.target.value)}
+            >
+              <option value="" disabled defaultValue="Select A Venue">Select a venue!</option>
+              {selectableVenues.map(venue => <option key={venue.id} value={venue.id}>{venue.name}</option>)}
+            </select>
+          </div>
 
           <StyledButton
             className="border-[1px] gradient-red text-black mt-4 p-2 rounded w-[50%]"
-            onClick={() => setFlipValue(flipValue + 1)}
+            onClick={() => {
+              setFlipValue(flipValue + 1)
+
+            }}
           >
             Check In ✔
           </StyledButton>

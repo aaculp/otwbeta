@@ -22,9 +22,8 @@ export const Flipr = ({ value }) => {
                         repeat: true,
                         root: "div",
                         style: ".flip",
-                        transform: "step(1) -> arrive -> step(1)",
+                        transform: "arrive(1, 1, false, true)",
                         transition: "crossfade",
-                        view: '',
                         children: [
                             {
                                 view: "flip"

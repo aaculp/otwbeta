@@ -3,10 +3,12 @@
 import Image from "next/image";
 import { useState } from "react";
 
+// import Flip from '../components/Flip'
 import Logo from '../../public/OTW.png'
 
 export default function Home() {
   const [selectedVenue, setSelectedVenue] = useState('buffaloWildWings');
+  const [flipValue, setFlipValue] = useState(0)
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-start text-center text-white gradient-custom-background-vertical">
@@ -26,6 +28,9 @@ export default function Home() {
       </div>
 
       <div className="bg-white flex flex-col w-[95%] min-h-[100vh] rounded-tl-2xl rounded-tr-2xl p-8 mt-[-2em]">
+        <h1>
+          {/* <Flip value={flipValue} /> */}
+        </h1>
         <div className="flex flex-col items-center">
           <label className="flex flex-col items-center justify-around text-black text-2xl">
             Where you checking in from?
@@ -44,7 +49,10 @@ export default function Home() {
 
           <button
             className="border-[1px] gradient-red text-black mt-4 p-2 rounded w-[50%]"
-            onClick={() => console.log('im being clicked')}
+            onClick={() => {
+              console.log("logging this", flipValue)
+              setFlipValue(flipValue + 1)
+            }}
           >
             Check In ✔
           </button>

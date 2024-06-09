@@ -10,19 +10,22 @@ export const Flipr = ({ value }) => {
 
     useEffect(() => {
         const currDiv = divRef.current;
-        const didInit = tick => {
-            tickRef.current = tick;
-        };
+        console.log("divref", divRef, divRef.current)
+
         Tick.DOM.create(currDiv, {
             value,
-            didInit,
-            repeat: true,
+            didInit: (tick) => {
+                tickRef.current = tick;
+            },
             view: {
                 children: [
                     {
-                        root: "div",
-                        style: ".tick",
                         repeat: true,
+                        root: "div",
+                        style: ".flip",
+                        transform: "arrive",
+                        view: '',
+                        value: 10,
                         children: [
                             {
                                 view: "flip"
@@ -32,6 +35,7 @@ export const Flipr = ({ value }) => {
                 ]
             }
         });
+
         const tickValue = tickRef.current;
         return () => Tick.DOM.destroy(tickValue);
     });
@@ -42,5 +46,10 @@ export const Flipr = ({ value }) => {
         }
     }, [value]);
 
-    return <div ref={divRef} />;
+    return (
+        <div>
+            <div ref={divRef} />
+        </div>
+    )
 };
+

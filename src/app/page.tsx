@@ -2,17 +2,34 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import styled from "styled-components";
 
 import { Flipr } from '../components/Flip'
+import SelectVenue from '../components/SelectVenue'
 import Logo from '../../public/OTW.png'
 
+const StyledButton = styled.button`
+  &:active {
+    cursor: pointer;
+    opacity: 0.7;
+  }
+
+  // &:active {
+  //   background-color: rgba(12,138,26,0.9);
+  //   border: 1px solid black;
+  //   opacity: 1;
+  //   transition: background-color 500ms linear;
+  //   -webkit-transition: background-color 500ms linear;
+  //   -ms-transition: background-color 500ms linear;
+  // }
+`;
+
 export default function Home() {
-  const [selectedVenue, setSelectedVenue] = useState('buffaloWildWings');
   const [flipValue, setFlipValue] = useState(0)
 
   useEffect(() => {
     let timer = setTimeout(() => {
-      setFlipValue(183)
+      setFlipValue(34)
     }, 500)
 
     return () => clearTimeout(timer)
@@ -40,30 +57,14 @@ export default function Home() {
           <Flipr value={flipValue} />
         </h1>
         <div className="flex flex-col items-center">
-          <label className="flex flex-col items-center justify-around text-black text-2xl">
-            Where you checking in from?
-          </label>
-          <select
-            className="text-black border-[1px] border-black border-solid mt-4 p-2 w-[90%]"
-            name="venueSelect"
-            value={selectedVenue}
-            onChange={e => setSelectedVenue(e.target.value)}
-          >
-            <option value="buffaloWildWings">Buffalo Wild Wings -- Melbourne</option>
-            <option value="AppleBees">Apple Bees - Palm Bay Road</option>
-            <option value="Mainstree">Mainstreet Pub</option>
-            <option value="Debauchery">Debauchery</option>
-          </select>
+          <SelectVenue />
 
-          <button
+          <StyledButton
             className="border-[1px] gradient-red text-black mt-4 p-2 rounded w-[50%]"
-            onClick={() => {
-              console.log("logging this", flipValue)
-              setFlipValue(flipValue + 1)
-            }}
+            onClick={() => setFlipValue(flipValue + 1)}
           >
             Check In ✔
-          </button>
+          </StyledButton>
         </div>
       </div>
     </main>

@@ -10,7 +10,6 @@ export const Flipr = ({ value }) => {
 
     useEffect(() => {
         const currDiv = divRef.current;
-        console.log("divref", divRef, divRef.current)
 
         Tick.DOM.create(currDiv, {
             value,
@@ -23,9 +22,9 @@ export const Flipr = ({ value }) => {
                         repeat: true,
                         root: "div",
                         style: ".flip",
-                        transform: "arrive",
+                        transform: "step(1) -> arrive -> step(1)",
+                        transition: "crossfade",
                         view: '',
-                        value: 10,
                         children: [
                             {
                                 view: "flip"

@@ -5,19 +5,17 @@ export const useVenues = () => {
     const [venues, setVenues] = useState([])
     const [singleVenue, setSingleVenue] = useState([])
 
-    const getAllVenues = async ({ }) => {
+    const getAllVenues = async () => {
         try {
-            const response = await fetch(`${config.BACKEND_API}/venues}`, {
+            const response = await fetch(`http://192.168.50.49:4000/venues`, {
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
                 },
             })
 
-            const data = response.json();
-            console.log("data inside getVenues:", data)
-
-            setVenues(data)
+            const data = await response.json();
+            return { venues: data }
         } catch (error) {
             console.log("Error inside getVenues:", error)
         }

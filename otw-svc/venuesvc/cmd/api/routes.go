@@ -1,7 +1,8 @@
-package main 
+package main
 
 import (
 	"net/http"
+
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -9,8 +10,8 @@ func (app *application) routes() http.Handler {
 	router := httprouter.New()
 
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthCheckHandler)
-	router.HandlerFunc(http.MethodGet, "/v1/venues", app.venuesHandler)
-	router.HandlerFunc(http.MethodGet, "/v1/venues/:id", app.venueHandler)
+	router.HandlerFunc(http.MethodGet, "/v1/venues", app.getVenuesHandler)
+	router.HandlerFunc(http.MethodGet, "/v1/venues/:id", app.getVenueByIdHandler)
 
 	return router
 }

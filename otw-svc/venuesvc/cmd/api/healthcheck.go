@@ -5,16 +5,17 @@ import (
 )
 
 func (app *application) healthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	data := map[string]string{
-		"status":      "available",
-		"environment": app.config.env,
-		"version":     version,
+	env := envelope{
+		"status": "available",
+		"system_info": map[string]string{
+			"environment": app.config.env,
+			"version":     version,
+		},
 	}
 
-	err := app.writeJSON(w, http.StatusOK, data, nil)
+	err := app.writeJSON(w, http.StatusOK, env, nil)
 
 	if err != nil {
-		app.logger.Error(err.Error())
-		http.Error(w, "The service encountered a problem with your request", http.StatusInternalServerError)
+		app.serverErrorResponse(w, r, err)
 	}
 }

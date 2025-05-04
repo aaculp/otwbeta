@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
+
+	"venuesvc.otw.net/internal/data"
 )
 
 func (app *application) getVenuesHandler(w http.ResponseWriter, r *http.Request) {
@@ -15,9 +18,23 @@ func (app *application) getVenueByIdHandler(w http.ResponseWriter, r *http.Reque
 	id, err := app.readIDParam(r)
 
 	if err != nil {
-		http.NotFound(w, r)
+		app.notFoundResponse(w, r)
 		return
 	}
 
-	fmt.Fprintf(w, "Show the details of the venue %d\n", id)
+	venue := data.Venue{
+		ID:          id,
+		CreatedAt:   time.Now(),
+		Name:        "Mcdonalds",
+		Description: "Mcdonalds Columbus, Ohio",
+		Addr:        "123 Mcdonalds Ave, Columbus, Ohio, 43235",
+		Tags:        []string{"Fast Food", "Restuarant", "Dine In", "Drive-tru"},
+		Version:     1,
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"venue": venue}, nil)
+
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }

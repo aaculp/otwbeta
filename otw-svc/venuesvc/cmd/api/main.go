@@ -1,19 +1,19 @@
 package main
 
-import ( 
+import (
 	"flag"
-	"log/slog"
-	"os"
-	"net/http"
 	"fmt"
+	"log/slog"
+	"net/http"
+	"os"
 	"time"
 )
 
 /*
 GET /v1/healthCheck -- Get service info
 GET /v1/venues/ venuesHandler -- Return all venues
-POST /v1/venues/:id createVenueHandler -- Create a new venue
 GET /v1/veneus/:id venueHandler -- Return venue by ID
+POST /v1/venues/:id createVenueHandler -- Create a new venue
 PUT /v1/venues/:id editVenueHandler --  Update Details of a venue
 DELETE /v1/venues/:id deleteVenueHandler -- Delete venue
 GET /v1/venues/:range venuesInRangeHandler -- Return venues in range
@@ -22,11 +22,11 @@ GET /v1/venues/:range venuesInRangeHandler -- Return venues in range
 const version = "0.0.1"
 
 type config struct {
-	port int 
-	env string
+	port int
+	env  string
 }
 
-type application struct { 
+type application struct {
 	config config
 	logger *slog.Logger
 }
@@ -44,12 +44,12 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Addr: fmt.Sprintf(":%d", cfg.port),
-		Handler: app.routes(),
-		IdleTimeout: time.Minute,
-		ReadTimeout: 5 * time.Second,
+		Addr:         fmt.Sprintf(":%d", cfg.port),
+		Handler:      app.routes(),
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
-		ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),
+		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
 	}
 
 	logger.Info("Starting server", "addr", srv.Addr, "env", cfg.env)

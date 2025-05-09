@@ -53,3 +53,46 @@ func (m VenueModel) Get(id int64) (*Venue, error) {
 	v.Tags = tags
 	return &v, nil
 }
+
+func (m VenueModel) GetAll() ([]Venue, error) {
+	query := `
+	SELECT id, created_at, name, description, addr, tags, version
+	FROM venues
+	ORDER BY id ASC`
+
+	rows, err := m.DB.Query(query)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var venues []Venue
+	for rows.Next() {
+		var v Venue
+		var tags []string
+
+		err := rows.Scan(
+			&v.ID,
+			&v.CreatedAt,
+			&v.Name,
+			&v.Description,
+			&v.Addr,
+			pq.Array(&tags),
+			&v.Version,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		v.Tags = tags
+		venues = append(venues, v)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return venues, nil
+}

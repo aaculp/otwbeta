@@ -36,7 +36,7 @@ export const Flipr = ({ value }) => {
 
         const tickValue = tickRef.current;
         return () => Tick.DOM.destroy(tickValue);
-    });
+    }, []);
 
     useEffect(() => {
         if (tickRef.current) {

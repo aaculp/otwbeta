@@ -1,17 +1,25 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	"venuesvc.otw.net/internal/data"
 )
 
 func (app *application) getVenuesHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Returning all venues")
-	fmt.Fprintf(w, "environment: %s\n", app.config.env)
-	fmt.Fprintf(w, "version: %s", version)
+	venues, err := app.venueModel.GetAll()
+
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"venues": venues}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
 
 func (app *application) getVenueByIdHandler(w http.ResponseWriter, r *http.Request) {
@@ -22,15 +30,25 @@ func (app *application) getVenueByIdHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	venue := data.Venue{
-		ID:          id,
-		CreatedAt:   time.Now(),
-		Name:        "Mcdonalds",
-		Description: "Mcdonalds Columbus, Ohio",
-		Addr:        "123 Mcdonalds Ave, Columbus, Ohio, 43235",
-		Tags:        []string{"Fast Food", "Restuarant", "Dine In", "Drive-tru"},
-		Version:     1,
+	venue, err := app.venueModel.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
 	}
+
+	// venue := data.Venue{
+	// 	ID:          id,
+	// 	CreatedAt:   time.Now(),
+	// 	Name:        "Mcdonalds",
+	// 	Description: "Mcdonalds Columbus, Ohio",
+	// 	Addr:        "123 Mcdonalds Ave, Columbus, Ohio, 43235",
+	// 	Tags:        []string{"Fast Food", "Restuarant", "Dine In", "Drive-tru"},
+	// 	Version:     1,
+	// }
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"venue": venue}, nil)
 

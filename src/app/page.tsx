@@ -3,10 +3,14 @@
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
+import dynamic from 'next/dynamic';
 
-import { Flipr } from '../components/Flip'
 import { useVenues } from '../hooks/useVenues';
 import Logo from '../../public/OTW.png'
+
+const Flipr = dynamic(() => import('../components/Flip').then(mod => mod.Flipr), {
+  ssr: false
+});
 
 const StyledButton = styled.button`
   &:active, &:hover {
@@ -38,14 +42,16 @@ export default function Home() {
 
   const handleGetVenues = useCallback(async () => {
     const data = await getAllVenues();
-    setSelectableVenues([...data?.venues])
-  }, [getAllVenues])
+    console.log(data)
+
+    if (data.venues.length > 0)
+      setSelectableVenues(data?.venues || [])
+  }, [])
 
   useEffect(() => {
-    if (selectableVenues.length === 0) {
-      handleGetVenues()
-    }
-  }, [selectableVenues, handleGetVenues])
+    handleGetVenues()
+  }, [handleGetVenues])
+
 
   // Simulating getting all time checkins
   useEffect(() => {

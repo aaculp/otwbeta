@@ -48,6 +48,7 @@ func main() {
 	flag.Parse()
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
 	db, err := openDB()
 	if err != nil {
 		logger.Error("unable to connect to DB", "error", err)

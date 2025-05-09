@@ -3,10 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/joho/godotenv"
+	"venuesvc.otw.net/internal/data"
 )
 
 /*
@@ -27,20 +31,34 @@ type config struct {
 }
 
 type application struct {
-	config config
-	logger *slog.Logger
+	config     config
+	logger     *slog.Logger
+	venueModel data.VenueModel
 }
 
 func main() {
+	dbErr := godotenv.Load()
+	if dbErr != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	var cfg config
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
 	flag.Parse()
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	db, err := openDB()
+	if err != nil {
+		logger.Error("unable to connect to DB", "error", err)
+		os.Exit(1)
+	}
+	defer db.Close()
+
 	app := &application{
-		config: cfg,
-		logger: logger,
+		config:     cfg,
+		logger:     logger,
+		venueModel: data.VenueModel{DB: db},
 	}
 
 	srv := &http.Server{
@@ -54,7 +72,7 @@ func main() {
 
 	logger.Info("Starting server", "addr", srv.Addr, "env", cfg.env)
 
-	err := srv.ListenAndServe()
-	logger.Error(err.Error())
+	errSrv := srv.ListenAndServe()
+	logger.Error(errSrv.Error())
 	os.Exit(1)
 }

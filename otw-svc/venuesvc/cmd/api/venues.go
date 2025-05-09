@@ -38,3 +38,21 @@ func (app *application) getVenueByIdHandler(w http.ResponseWriter, r *http.Reque
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) postVenueHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Name        string   `json:"name"`
+		Description string   `json:"description"`
+		Addr        string   `json:"addr"`
+		Tags        []string `json:"tags"`
+	}
+
+	err := app.readJSON(nil, r, &input)
+
+	if err != nil {
+		app.badReqestResponse(w, r, err)
+		app.errorResponse(w, r, http.StatusBadRequest, err.Error())
+	}
+
+	fmt.Fprintf(w, "%+v\n", input)
+}

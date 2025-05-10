@@ -2,8 +2,8 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
+	"time"
 
 	"venuesvc.otw.net/internal/data"
 )
@@ -69,21 +69,23 @@ func (app *application) getTotalCheckinsHandler(w http.ResponseWriter, r *http.R
 }
 
 func (app *application) postVenueHandler(w http.ResponseWriter, r *http.Request) {
-	var input struct {
-		Name        string   `json:"name"`
-		Description string   `json:"description"`
-		Addr        string   `json:"addr"`
-		Tags        []string `json:"tags"`
-	}
+	newVenue := data.Venue{}
+	newVenue.Version = 1
+	newVenue.CreatedAt = time.Now().UTC()
 
-	err := app.readJSON(nil, r, &input)
-
+	err := app.readJSON(nil, r, &newVenue)
 	if err != nil {
 		app.badReqestResponse(w, r, err)
 		app.errorResponse(w, r, http.StatusBadRequest, err.Error())
 	}
 
-	fmt.Fprintf(w, "%+v\n", input)
+	err = app.venueModel.AddNewVenue(&newVenue)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	app.writeJSON(w, http.StatusOK, envelope{"venue": newVenue}, nil)
 }
 
 func (app *application) postCheckinHandler(w http.ResponseWriter, r *http.Request) {

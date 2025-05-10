@@ -20,10 +20,13 @@ func (app *application) routes() http.Handler {
 		panic("Something went wrong and here trying not to panic")
 	})
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthCheckHandler)
+
 	router.HandlerFunc(http.MethodGet, "/v1/venues", app.getVenuesHandler)
+	router.HandlerFunc(http.MethodPost, "/v1/venues", app.postVenueHandler)
+
 	router.HandlerFunc(http.MethodGet, "/v1/venues/:id", app.getVenueByIdHandler)
-	router.HandlerFunc(http.MethodPost, "/v1/venues/:id", app.postVenueHandler)
 	router.HandlerFunc(http.MethodPost, "/v1/venues/:id/checkin", app.postCheckinHandler)
+
 	router.HandlerFunc(http.MethodGet, "/v1/checkins/count", app.getTotalCheckinsHandler)
 
 	return app.enableCORS(app.recoverPanic(router))

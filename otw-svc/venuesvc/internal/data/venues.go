@@ -10,12 +10,12 @@ import (
 
 type Venue struct {
 	ID          int64     `json:"id"`
-	CreatedAt   time.Time `json:"-"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	Addr        string    `json:"addr"`
 	Tags        []string  `json:"tags"`
 	Version     int32     `json:"version"`
+	CreatedAt   time.Time `json:"-"`
 }
 
 type VenueModel struct {
@@ -99,7 +99,7 @@ func (m VenueModel) GetAll() ([]Venue, error) {
 
 func (m VenueModel) GetCheckins(venueID int64) (int, error) {
 	query := `
-		SELECT COUNT(*) FROM checkins WHERE venue_id = $1
+		SELECT COUNT(*) FROM venue_schema.checkins WHERE venue_id = $1
 	`
 
 	var count int
@@ -108,7 +108,7 @@ func (m VenueModel) GetCheckins(venueID int64) (int, error) {
 }
 
 func (m VenueModel) GetTotalCheckins() (int, error) {
-	query := `SELECT COUNT(*) FROM checkins`
+	query := `SELECT COUNT(*) FROM venue_schema.checkins`
 
 	var count int
 	err := m.DB.QueryRow(query).Scan(&count)
@@ -119,9 +119,20 @@ func (m VenueModel) GetTotalCheckins() (int, error) {
 	return count, nil
 }
 
+func (m VenueModel) AddNewVenue(v *Venue) error {
+	query := `
+		INSERT INTO venue_schema.venues (name, description, addr, tags, version, created_at)
+		VALUES ($1, $2, $3, $4, $5, $6)
+	`
+
+	args := []any{v.Name, v.Description, v.Addr, pq.Array(v.Tags), v.Version, v.CreatedAt}
+	_, err := m.DB.Exec(query, args...)
+	return err
+}
+
 func (m VenueModel) InsertCheckin(venueID int64) error {
 	query := `
-		INSERT INTO checkins (venue_id)
+		INSERT INTO venue_schema.checkins (venue_id)
 		VALUES ($1)
 	`
 
@@ -131,7 +142,7 @@ func (m VenueModel) InsertCheckin(venueID int64) error {
 }
 
 func (m VenueModel) CountCheckins(venueID int64) (int, error) {
-	query := `SELECT COUNT(*) FROM checkins WHERE venue_id = $1`
+	query := `SELECT COUNT(*) FROM venue_schema.checkins WHERE venue_id = $1`
 
 	var count int
 	err := m.DB.QueryRow(query, venueID).Scan(&count)

@@ -57,6 +57,17 @@ func (app *application) getVenueByIdHandler(w http.ResponseWriter, r *http.Reque
 	}
 }
 
+func (app *application) getTotalCheckinsHandler(w http.ResponseWriter, r *http.Request) {
+	count, err := app.venueModel.GetTotalCheckins()
+
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	app.writeJSON(w, http.StatusOK, envelope{"count": count}, nil)
+}
+
 func (app *application) postVenueHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Name        string   `json:"name"`
@@ -73,4 +84,21 @@ func (app *application) postVenueHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	fmt.Fprintf(w, "%+v\n", input)
+}
+
+func (app *application) postCheckinHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := app.readIDParam(r)
+
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	err = app.venueModel.InsertCheckin(id)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

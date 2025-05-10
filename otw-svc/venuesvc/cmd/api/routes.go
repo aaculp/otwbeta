@@ -22,7 +22,9 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthCheckHandler)
 	router.HandlerFunc(http.MethodGet, "/v1/venues", app.getVenuesHandler)
 	router.HandlerFunc(http.MethodGet, "/v1/venues/:id", app.getVenueByIdHandler)
-	router.HandlerFunc(http.MethodPost, "/v1/venus/:id", app.postVenueHandler)
+	router.HandlerFunc(http.MethodPost, "/v1/venues/:id", app.postVenueHandler)
+	router.HandlerFunc(http.MethodPost, "/v1/venues/:id/checkin", app.postCheckinHandler)
+	router.HandlerFunc(http.MethodGet, "/v1/checkins/count", app.getTotalCheckinsHandler)
 
 	return app.enableCORS(app.recoverPanic(router))
 }

@@ -1,12 +1,12 @@
 "use client"
 
 import Image from "next/image";
+import dynamic from 'next/dynamic';
 import { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
-import dynamic from 'next/dynamic';
-
-import { useVenues } from '../hooks/useVenues';
 import Logo from '../../public/OTW.png'
+import { useVenues } from '../hooks/useVenues';
+import { useCheckin } from '../hooks/useCheckin';
 
 const Flipr = dynamic(() => import('../components/Flip').then(mod => mod.Flipr), {
   ssr: false
@@ -36,27 +36,37 @@ interface Venue {
 
 export default function Home() {
   const { getAllVenues } = useVenues()
+  const { getAllCheckins } = useCheckin()
   const [flipValue, setFlipValue] = useState(0)
   const [selectedVenue, setSelectedVenue] = useState('');
   const [selectableVenues, setSelectableVenues] = useState<Venue[]>([])
+  const [checkinCount, setCheckinCount] = useState(0)
 
   const handleGetVenues = useCallback(async () => {
     const data = await getAllVenues();
-    console.log(data)
 
     if (data.venues.length > 0)
       setSelectableVenues(data?.venues || [])
+  }, [])
+
+  const handleGetCheckins = useCallback(async () => {
+    const data = await getAllCheckins()
+    if (data?.count) setCheckinCount(data.count)
   }, [])
 
   useEffect(() => {
     handleGetVenues()
   }, [handleGetVenues])
 
+  useEffect(() => {
+    handleGetCheckins()
+  }, [handleGetCheckins])
 
   // Simulating getting all time checkins
   useEffect(() => {
     let timer = setTimeout(() => {
       setFlipValue(34)
+      // setFlipValue(checkinCount)
     }, 500)
 
     return () => clearTimeout(timer)
@@ -96,7 +106,7 @@ export default function Home() {
               onChange={e => setSelectedVenue(e.target.value)}
             >
               <option value="" disabled defaultValue="Select A Venue">Select a venue!</option>
-              {selectableVenues.map(venue => <option key={venue.id} value={venue.id}>{venue.name}</option>)}
+              {selectableVenues.map(venue => <option key={venue.id} value={venue.id}>{venue.addr}</option>)}
             </select>
           </div>
 
@@ -104,7 +114,6 @@ export default function Home() {
             className="border-[1px] gradient-red text-black mt-4 p-2 rounded w-[50%]"
             onClick={() => {
               setFlipValue(flipValue + 1)
-
             }}
           >
             Check In ✔

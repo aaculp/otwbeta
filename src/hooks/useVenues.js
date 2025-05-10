@@ -19,7 +19,7 @@ export const useVenues = () => {
             return { venues: data?.venues ?? [] };
         } catch (error) {
             console.error("Error inside getAllVenues:", error);
-            return { venues: [] }; // <= ensures frontend won't crash
+            return { venues: [] };
         }
     };
 

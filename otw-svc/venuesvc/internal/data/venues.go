@@ -27,7 +27,7 @@ var ErrRecordNotFound = errors.New("record not found")
 func (m VenueModel) Get(id int64) (*Venue, error) {
 	query := `
 	SELECT id, created_at, name, description, addr, tags, version
-	FROM venues
+	FROM venue_schema.venues
 	WHERE id = $1`
 
 	var v Venue
@@ -57,7 +57,7 @@ func (m VenueModel) Get(id int64) (*Venue, error) {
 func (m VenueModel) GetAll() ([]Venue, error) {
 	query := `
 	SELECT id, created_at, name, description, addr, tags, version
-	FROM venues
+	FROM venue_schema.venues
 	ORDER BY id ASC`
 
 	rows, err := m.DB.Query(query)

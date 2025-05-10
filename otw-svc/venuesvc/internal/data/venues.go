@@ -35,12 +35,12 @@ func (m VenueModel) Get(id int64) (*Venue, error) {
 
 	err := m.DB.QueryRow(query, id).Scan(
 		&v.ID,
-		&v.CreatedAt,
 		&v.Name,
 		&v.Description,
 		&v.Addr,
 		pq.Array(&tags),
 		&v.Version,
+		&v.CreatedAt,
 	)
 
 	if err != nil {

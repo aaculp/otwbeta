@@ -68,11 +68,8 @@ export default function Home() {
 
     try {
       setIsCheckingIn(true);
-
-      const { count: updatedCount } = await postVenueCheckin(selectedVenueData.id);
-      setCheckinCount(updatedCount);
-      setFlipValue(updatedCount);
-
+      await postVenueCheckin(selectedVenueData.id);
+      await handleGetCheckins()
       toast.success("Check-in successful!");
     } catch (err) {
       toast.error("🚨 Check-in failed. Try again.");
@@ -80,6 +77,7 @@ export default function Home() {
       setIsCheckingIn(false);
     }
   };
+
   useEffect(() => {
     handleGetVenues()
   }, [handleGetVenues])
@@ -91,12 +89,12 @@ export default function Home() {
   // Simulating getting all time checkins
   useEffect(() => {
     let timer = setTimeout(() => {
-      setFlipValue(34)
-      // setFlipValue(checkinCount)
+      // setFlipValue(34)
+      setFlipValue(checkinCount)
     }, 500)
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [checkinCount])
 
   // console.log(checkinCount)
   return (

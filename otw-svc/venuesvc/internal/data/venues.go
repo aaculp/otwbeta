@@ -129,3 +129,11 @@ func (m VenueModel) InsertCheckin(venueID int64) error {
 
 	return err
 }
+
+func (m VenueModel) CountCheckins(venueID int64) (int, error) {
+	query := `SELECT COUNT(*) FROM checkins WHERE venue_id = $1`
+
+	var count int
+	err := m.DB.QueryRow(query, venueID).Scan(&count)
+	return count, err
+}

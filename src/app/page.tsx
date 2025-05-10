@@ -3,6 +3,7 @@
 import Image from "next/image";
 import dynamic from 'next/dynamic';
 import { useState, useEffect, useCallback } from "react";
+import { toast } from 'react-toastify';
 import styled from "styled-components";
 import Logo from '../../public/OTW.png'
 import { useVenues } from '../hooks/useVenues';
@@ -31,14 +32,19 @@ const StyledButton = styled.button`
 interface Venue {
   id: string;
   name: string;
-  location: string;
+  addr: string;
+  tags: string[];
+  description: string;
+  checkinCount?: number;
 }
 
 export default function Home() {
+  const { getAllCheckins, postVenueCheckin } = useCheckin()
   const { getAllVenues } = useVenues()
-  const { getAllCheckins } = useCheckin()
   const [flipValue, setFlipValue] = useState(0)
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
   const [selectedVenue, setSelectedVenue] = useState('');
+  const [selectedVenueData, setSelectedVenueData] = useState<Venue | null>(null)
   const [selectableVenues, setSelectableVenues] = useState<Venue[]>([])
   const [checkinCount, setCheckinCount] = useState(0)
 
@@ -54,6 +60,26 @@ export default function Home() {
     if (data?.count) setCheckinCount(data.count)
   }, [])
 
+  const handleCheckin = async () => {
+    if (!selectedVenueData) {
+      toast.warning("Please select a venue first.");
+      return;
+    }
+
+    try {
+      setIsCheckingIn(true);
+
+      const { count: updatedCount } = await postVenueCheckin(selectedVenueData.id);
+      setCheckinCount(updatedCount);
+      setFlipValue(updatedCount);
+
+      toast.success("Check-in successful!");
+    } catch (err) {
+      toast.error("🚨 Check-in failed. Try again.");
+    } finally {
+      setIsCheckingIn(false);
+    }
+  };
   useEffect(() => {
     handleGetVenues()
   }, [handleGetVenues])
@@ -72,6 +98,7 @@ export default function Home() {
     return () => clearTimeout(timer)
   }, [])
 
+  // console.log(checkinCount)
   return (
     <main className="flex min-h-screen flex-col items-center justify-start text-center text-white gradient-custom-background-vertical">
       <div className="">
@@ -85,7 +112,7 @@ export default function Home() {
 
         <div className="flex flex-col justify-start items-center w-full p-4 mb-[5em] opacity-80">
           <span className="text-3xl">Data You Wish You Knew</span>
-          <span className="text-lg pt-8">OTW is a social media platform utilizing QR codes to deliver you real-time data you need before you begin your night out. By scanning the venues QR code you are updating data for other customers in real time.</span>
+          <span className="text-lg pt-8">OTW is a social media platform utilizing QR codes to deliver you real-time data you need before you begin your night out. By scanning the venues QR code you are updating data for other customers in real time. As more people checkin, the data becomes more accurate thus the app becomes more useful.</span>
         </div>
       </div>
 
@@ -103,20 +130,28 @@ export default function Home() {
               className="text-black border-[1px] border-black border-solid mt-4 p-2 w-full"
               name="venueSelect"
               value={selectedVenue}
-              onChange={e => setSelectedVenue(e.target.value)}
+              onChange={e => {
+                setSelectedVenue(e.target.value)
+
+                const venue = selectableVenues.find(v => v.id.toString() === e.target.value);
+                setSelectedVenueData(venue ?? null);
+              }}
             >
               <option value="" disabled defaultValue="Select A Venue">Select a venue!</option>
-              {selectableVenues.map(venue => <option key={venue.id} value={venue.id}>{venue.addr}</option>)}
+              {selectableVenues.map(venue =>
+                <option key={venue.id} value={venue.id}>
+                  {venue.name} — {venue.addr}
+                </option>
+              )}
             </select>
           </div>
 
           <StyledButton
             className="border-[1px] gradient-red text-black mt-4 p-2 rounded w-[50%]"
-            onClick={() => {
-              setFlipValue(flipValue + 1)
-            }}
+            disabled={isCheckingIn || !selectedVenueData}
+            onClick={handleCheckin}
           >
-            Check In ✔
+            {isCheckingIn ? "Checking in..." : "Check In ✔"}
           </StyledButton>
         </div>
       </div>

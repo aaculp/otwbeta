@@ -100,5 +100,12 @@ func (app *application) postCheckinHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	count, err := app.venueModel.CountCheckins(id)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	app.writeJSON(w, http.StatusOK, envelope{"checkinCount": count}, nil)
 	w.WriteHeader(http.StatusNoContent)
 }

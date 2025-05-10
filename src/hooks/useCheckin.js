@@ -19,7 +19,26 @@ export const useCheckin = () => {
         }
     };
 
+    const postVenueCheckin = async (id) => {
+        try {
+            const response = await fetch(`${baseURL}/v1/venues/${id}/checkin`, {
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (!response.ok) throw new Error("Failed to post venue check-in");
+
+            const data = await response.json();
+
+            return { count: data?.checkinCount ?? 0 };
+        } catch (error) {
+            console.error("Error inside postVenueCheckin:", error);
+            return { count: 0 };
+        }
+    };
+
     return {
-        getAllCheckins
+        getAllCheckins,
+        postVenueCheckin
     }
 }

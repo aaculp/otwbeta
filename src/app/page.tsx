@@ -87,9 +87,9 @@ export default function Home() {
   }, [handleGetCheckins])
 
   // Simulating getting all time checkins
+  // leaving this, will give animation of checkins
   useEffect(() => {
     let timer = setTimeout(() => {
-      // setFlipValue(34)
       setFlipValue(checkinCount)
     }, 500)
 

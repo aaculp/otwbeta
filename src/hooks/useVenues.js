@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 export const useVenues = () => {
-    const [venues, setVenues] = useState([])
-    const [singleVenue, setSingleVenue] = useState([])
+    const [venues, setVenues] = useState([]);
+    const [singleVenue, setSingleVenue] = useState(null);
     const baseURL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
     const getAllVenues = async () => {
@@ -15,7 +15,6 @@ export const useVenues = () => {
             if (!response.ok) throw new Error("Failed to fetch venues");
 
             const data = await response.json();
-
             return { venues: data?.venues ?? [] };
         } catch (error) {
             console.error("Error inside getAllVenues:", error);
@@ -23,7 +22,8 @@ export const useVenues = () => {
         }
     };
 
-    const getVenueById = async ({ id } = {}) => {
+    const getVenueById = async (params = {}) => {
+        const { id } = params;
         if (!id) return;
 
         try {
@@ -38,6 +38,25 @@ export const useVenues = () => {
             setSingleVenue(data?.venue ?? null);
         } catch (error) {
             console.error("Error inside getVenueById:", error);
+        }
+    };
+
+    const getVenueCheckinCount = async (id) => {
+        if (!id) return 0;
+
+        try {
+            const response = await fetch(`${baseURL}/v1/venues/${id}/checkin`, {
+                method: "GET",
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (!response.ok) throw new Error("Failed to fetch checkin count");
+
+            const data = await response.json();
+            return data?.checkinCount ?? 0;
+        } catch (error) {
+            console.error("Error inside getVenueCheckinCount:", error);
+            return 0;
         }
     };
 
@@ -64,6 +83,7 @@ export const useVenues = () => {
         setVenues,
         getAllVenues,
         getVenueById,
+        getVenueCheckinCount,
         postVenues
-    }
-}
+    };
+};

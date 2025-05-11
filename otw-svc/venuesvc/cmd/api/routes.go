@@ -25,6 +25,7 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodPost, "/v1/venues", app.postVenueHandler)
 
 	router.HandlerFunc(http.MethodGet, "/v1/venues/:id", app.getVenueByIdHandler)
+	router.HandlerFunc(http.MethodGet, "/v1/venues/:id/checkin", app.getCheckinsByVenueHandler)
 	router.HandlerFunc(http.MethodPost, "/v1/venues/:id/checkin", app.postCheckinHandler)
 
 	router.HandlerFunc(http.MethodGet, "/v1/checkins/count", app.getTotalCheckinsHandler)

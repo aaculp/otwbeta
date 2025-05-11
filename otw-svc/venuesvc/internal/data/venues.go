@@ -146,5 +146,9 @@ func (m VenueModel) CountCheckins(venueID int64) (int, error) {
 
 	var count int
 	err := m.DB.QueryRow(query, venueID).Scan(&count)
-	return count, err
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }

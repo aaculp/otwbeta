@@ -1,13 +1,14 @@
-"use client"
+"use client";
 
 import Image from "next/image";
 import dynamic from 'next/dynamic';
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { toast } from 'react-toastify';
 import styled from "styled-components";
-import Logo from '../../public/OTW.png'
+import Logo from '../../public/OTW.png';
 import { useVenues } from '../hooks/useVenues';
 import { useCheckin } from '../hooks/useCheckin';
+import VenueTile from "@/components/VenueTile";
 
 const Flipr = dynamic(() => import('../components/Flip').then(mod => mod.Flipr), {
   ssr: false
@@ -39,26 +40,62 @@ interface Venue {
 }
 
 export default function Home() {
-  const { getAllCheckins, postVenueCheckin } = useCheckin()
-  const { getAllVenues } = useVenues()
-  const [flipValue, setFlipValue] = useState(0)
+  const { getAllCheckins, postVenueCheckin } = useCheckin();
+  const { getAllVenues, getVenueCheckinCount } = useVenues();
+
+  const [flipValue, setFlipValue] = useState(0);
   const [isCheckingIn, setIsCheckingIn] = useState(false);
-  const [selectedVenue, setSelectedVenue] = useState('');
-  const [selectedVenueData, setSelectedVenueData] = useState<Venue | null>(null)
-  const [selectableVenues, setSelectableVenues] = useState<Venue[]>([])
-  const [checkinCount, setCheckinCount] = useState(0)
+  const [selectedVenueData, setSelectedVenueData] = useState<Venue | null>(null);
+  const [selectableVenues, setSelectableVenues] = useState<Venue[]>([]);
+  const [venueCheckinMap, setVenueCheckinMap] = useState<Record<string, number>>({});
+  const [checkinCount, setCheckinCount] = useState(0);
+  useEffect(() => {
+    const fetchVenues = async () => {
+      const data = await getAllVenues();
 
-  const handleGetVenues = useCallback(async () => {
-    const data = await getAllVenues();
+      if (data.venues.length > 0) {
+        const counts = await Promise.all(
+          data.venues.map(async (venue) => {
+            const count = await getVenueCheckinCount(venue.id);
+            return { id: venue.id, count };
+          })
+        );
 
-    if (data.venues.length > 0)
-      setSelectableVenues(data?.venues || [])
-  }, [])
+        const map = counts.reduce((acc, { id, count }) => {
+          acc[id] = count;
+          return acc;
+        }, {});
 
-  const handleGetCheckins = useCallback(async () => {
-    const data = await getAllCheckins()
-    if (data?.count) setCheckinCount(data.count)
-  }, [])
+        const venuesWithCounts = data.venues.map((venue) => ({
+          ...venue,
+          checkinCount: map[venue.id] ?? 0,
+        }));
+
+        setSelectableVenues(venuesWithCounts);
+        setVenueCheckinMap(map);
+      }
+    };
+
+    fetchVenues();
+  }, []);
+
+
+  useEffect(() => {
+    const fetchTotalCheckins = async () => {
+      const data = await getAllCheckins();
+      if (data?.count) setCheckinCount(data.count);
+    };
+
+    fetchTotalCheckins();
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFlipValue(checkinCount);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [checkinCount]);
 
   const handleCheckin = async () => {
     if (!selectedVenueData) {
@@ -68,8 +105,32 @@ export default function Home() {
 
     try {
       setIsCheckingIn(true);
+
+      // Post the checkin
       await postVenueCheckin(selectedVenueData.id);
-      await handleGetCheckins()
+
+      // Update total checkins
+      const newTotal = await getAllCheckins();
+      if (newTotal?.count) setCheckinCount(newTotal.count);
+
+      // Get updated checkin count for this venue
+      const newCount = await getVenueCheckinCount(selectedVenueData.id);
+
+      // Update checkin map
+      setVenueCheckinMap((prev) => ({
+        ...prev,
+        [selectedVenueData.id]: newCount,
+      }));
+
+      // Update count in selectableVenues list
+      setSelectableVenues((prevVenues) =>
+        prevVenues.map((venue) =>
+          venue.id === selectedVenueData.id
+            ? { ...venue, checkinCount: newCount }
+            : venue
+        )
+      );
+
       toast.success("Check-in successful!");
     } catch (err) {
       toast.error("🚨 Check-in failed. Try again.");
@@ -78,39 +139,20 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
-    handleGetVenues()
-  }, [handleGetVenues])
 
-  useEffect(() => {
-    handleGetCheckins()
-  }, [handleGetCheckins])
-
-  // Simulating getting all time checkins
-  // leaving this, will give animation of checkins
-  useEffect(() => {
-    let timer = setTimeout(() => {
-      setFlipValue(checkinCount)
-    }, 500)
-
-    return () => clearTimeout(timer)
-  }, [checkinCount])
-
-  // console.log(checkinCount)
   return (
     <main className="flex min-h-screen flex-col items-center justify-start text-center text-white gradient-custom-background-vertical">
       <div className="">
         <div className="flex flex-col justify-start items-center w-full">
-          <Image
-            src={Logo}
-            width={100}
-            alt="OTW"
-          />
+          <Image src={Logo} width={100} alt="OTW" />
         </div>
 
         <div className="flex flex-col justify-start items-center w-full p-4 mb-[5em] opacity-80">
           <span className="text-3xl">Data You Wish You Knew</span>
-          <span className="text-lg pt-8">OTW is a social media platform utilizing QR codes to deliver you real-time data you need before you begin your night out. By scanning the venues QR code you are updating data for other customers in real time. As more people checkin, the data becomes more accurate thus the app becomes more useful.</span>
+          <span className="text-lg pt-8">
+            OTW is a social media platform utilizing QR codes to deliver you real-time data you need before you begin your night out.
+            By scanning the venues QR code you are updating data for other customers in real time. As more people checkin, the data becomes more accurate thus the app becomes more useful.
+          </span>
         </div>
       </div>
 
@@ -119,38 +161,28 @@ export default function Home() {
           <span className="text-3xl pb-4">All Time Checkins:</span>
           <Flipr value={flipValue} />
         </h1>
+
         <div className="flex flex-col items-center">
-          <div>
-            <label className="flex flex-col items-center justify-around text-black text-2xl">
-              Where you checking in from?
-            </label>
-            <select
-              className="text-black border-[1px] border-black border-solid mt-4 p-2 w-full"
-              name="venueSelect"
-              value={selectedVenue}
-              onChange={e => {
-                setSelectedVenue(e.target.value)
+          <label className="flex flex-col items-center justify-around text-black text-2xl">
+            Where you checking in from?
+          </label>
 
-                const venue = selectableVenues.find(v => v.id.toString() === e.target.value);
-                setSelectedVenueData(venue ?? null);
-              }}
-            >
-              <option value="" disabled defaultValue="Select A Venue">Select a venue!</option>
-              {selectableVenues.map(venue =>
-                <option key={venue.id} value={venue.id}>
-                  {venue.name} — {venue.addr}
-                </option>
-              )}
-            </select>
+          <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '0.5em' }}>
+            {selectableVenues.map((venue) => {
+              const count = venueCheckinMap[venue.id] ?? 0;
+              const level = Math.min(count / 100, 1);
+
+              return (
+                <VenueTile
+                  key={venue.id}
+                  venue={venue}
+                  setSelectedVenueData={setSelectedVenueData}
+                  onCheckIn={handleCheckin}
+                  busynessLevel={level}
+                />
+              );
+            })}
           </div>
-
-          <StyledButton
-            className="border-[1px] gradient-red text-black mt-4 p-2 rounded w-[50%]"
-            disabled={isCheckingIn || !selectedVenueData}
-            onClick={handleCheckin}
-          >
-            {isCheckingIn ? "Checking in..." : "Check In ✔"}
-          </StyledButton>
         </div>
       </div>
     </main>

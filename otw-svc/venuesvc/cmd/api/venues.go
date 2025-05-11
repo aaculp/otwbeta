@@ -68,6 +68,21 @@ func (app *application) getTotalCheckinsHandler(w http.ResponseWriter, r *http.R
 	app.writeJSON(w, http.StatusOK, envelope{"count": count}, nil)
 }
 
+func (app *application) getCheckinsByVenueHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := app.readIDParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	count, err := app.venueModel.CountCheckins(id)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+
+	app.writeJSON(w, http.StatusOK, envelope{"checkinCount": count}, nil)
+}
+
 func (app *application) postVenueHandler(w http.ResponseWriter, r *http.Request) {
 	newVenue := data.Venue{}
 	newVenue.Version = 1
@@ -109,5 +124,5 @@ func (app *application) postCheckinHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	app.writeJSON(w, http.StatusOK, envelope{"checkinCount": count}, nil)
-	w.WriteHeader(http.StatusNoContent)
+	// w.WriteHeader(http.StatusNoContent)
 }
